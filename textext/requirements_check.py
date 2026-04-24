@@ -44,18 +44,7 @@ class Defaults(object):
     def inkscape_user_extensions_path(self): pass
 
     def inkscape_system_extensions_path(self, inkscape_exe_path):
-        try:
-            stdout, stderr = self.call_command([inkscape_exe_path, "--system-data-directory"])
-            path = os.path.join(stdout.decode("utf-8", 'ignore').rstrip(), "extensions")
-            err = None
-        except subprocess.CalledProcessError as excpt:
-            path = None
-            err = "Command `%s` failed, stdout: `%s`, stderr: `%s`" % (excpt.cmd, excpt.stdout, excpt.stderr)
-        except UnicodeDecodeError as excpt:
-            path = None
-            err = excpt.reason
-
-        return [path, err]
+        pass
 
     @property
     @abstractmethod
@@ -93,34 +82,30 @@ class LinuxDefaults(Defaults):
 
     @property
     def inkscape_user_extensions_path(self):
-        return os.path.expanduser("~/.config/inkscape/extensions")
+        pass
 
     @property
     def textext_config_path(self):
-        return os.path.expanduser("~/.config/textext")
+        pass
 
     @property
     def textext_logfile_path(self):
-        return os.path.expanduser("~/.cache/textext")
+        pass
 
     def get_system_path(self):
-        return os.environ["PATH"].split(os.path.pathsep)
+        pass
 
     @staticmethod
     def call_command(command, return_code=0):
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        if return_code is not None and p.returncode != return_code:
-            raise subprocess.CalledProcessError(p.returncode,command)
-        return stdout, stderr
+        pass
 
     @property
     def example_path(self):
-        return "/path/to/your/"
+        pass
 
     @property
     def setup_script(self):
-        return "python3 setup.py"
+        pass
 
 class MacDefaults(LinuxDefaults):
     os_name = "macos"
@@ -132,29 +117,27 @@ class MacDefaults(LinuxDefaults):
                         }
 
     def get_system_path(self):
-        path = ["/Applications/Inkscape.app/Contents/Resources"]
-        path += os.environ["PATH"].split(os.path.pathsep)
-        return path
+        pass
 
     @property
     def inkscape_user_extensions_path(self):
-        return os.path.expanduser("~/Library/Application Support/org.inkscape.Inkscape/config/inkscape/extensions")
+        pass
 
     @property
     def textext_config_path(self):
-        return os.path.expanduser("~/Library/Preferences/textext")
+        pass
 
     @property
     def textext_logfile_path(self):
-        return os.path.expanduser("~/Library/Preferences/textext")
+        pass
 
     @property
     def example_path(self):
-        return "/path/to/your/"
+        pass
 
     @property
     def setup_script(self):
-        return "python3 setup.py"
+        pass
 
 
 class WindowsDefaults(Defaults):
@@ -196,39 +179,31 @@ class WindowsDefaults(Defaults):
 
     @property
     def inkscape_user_extensions_path(self):
-        return os.path.join(os.getenv("APPDATA"), "inkscape", "extensions")
+        pass
 
     @property
     def textext_config_path(self):
-        return os.path.join(os.getenv("APPDATA"), "textext")
+        pass
 
     @property
     def textext_logfile_path(self):
-        return os.path.join(os.getenv("APPDATA"), "textext")
+        pass
 
     def get_system_path(self):
-        return self._tweaked_syspath
+        pass
 
     @staticmethod
     def call_command(command, return_code=0): # type: (List,Optional[int]) -> Tuple[str, str]
         # Ensure that command window does not pop up on Windows!
-        info = subprocess.STARTUPINFO()
-        info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        info.wShowWindow = subprocess.SW_HIDE
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=info)
-        stdout, stderr = p.communicate()
-        if return_code is not None and p.returncode != return_code:
-            raise subprocess.CalledProcessError(p.returncode, "{0}, stderr: {1}".format(command, stderr),
-                                                output=stdout, stderr=stderr)
-        return stdout, stderr
+        pass
 
     @property
     def example_path(self):
-        return "C:\\Path\\To\\Your\\"
+        pass
 
     @property
     def setup_script(self):
-        return "setup_win.bat"
+        pass
 
 
 class TexTextLogFormatter(logging.Formatter):
@@ -310,13 +285,7 @@ class TexTextLogFormatter(logging.Formatter):
         return [x for x in zip(cls.LEVELS, cls.NAMES)]
 
     def format(self, record):
-        logger_name = record.name
-        log_level = self.LEVELS.index(record.levelno)
-        level_name = self.NAMES[log_level]
-        color = self.colors[log_level] if self.enable_colors else ""
-        reset_color = self.COLOR_RESET if self.enable_colors else ""
-        message = super().format(record)
-        return f"[{logger_name}][{color}{level_name}{reset_color}]: {message}"
+        pass
 
 
 def set_logging_levels():
@@ -347,171 +316,28 @@ class TexTextRequirementsChecker(object):
         pass
 
     def find_gtk3(self) -> bool:
-        self.logger.info("Checking if GTK is available...")
-        try:
-            executable = sys.executable
-            defaults.call_command([executable, "-c", "import gi;"+
-                                                     "gi.require_version('Gtk', '3.0');"+
-                                                     "from gi.repository import Gtk, Gdk, GdkPixbuf"])
-        except (KeyError, OSError, subprocess.CalledProcessError):
-            self.logger.warning(f"   ...GTK3 is not found (but TkInter maybe available as a fall back...).")
-            self.logger.info(f"      GTK3 offers the best user experience. You may refer to the installation")
-            self.logger.info(f"      instructions to make it available:")
-            self.logger.info(f"      https://textext.github.io/textext/install/{defaults.os_name}.html")
-            return False
-        self.logger.log(SUCCESS, "   ...GTK3 is found.")
-        return True
+        pass
 
     def find_tkinter(self) -> bool:
-        self.logger.info("Checking if Tk interface (tkinter) is available...")
-        try:
-            defaults.call_command(
-                [sys.executable, "-c", "import tkinter; import tkinter.messagebox; import tkinter.filedialog;"])
-        except (KeyError, OSError, subprocess.CalledProcessError):
-            self.logger.warning("   ...tkinter is not found (but maybe GTK3 is available).")
-            return False
-        self.logger.log(SUCCESS, "   ...tkinter is found.")
-        return True
+        pass
 
     def find_inkscape(self) -> bool:
-        req_maj, req_min, req_rel = [int(item) for item in self.MINIMUM_REQUIRED_INKSCAPE_VERSION.split(".")]
-        self.logger.info(f"Checking for Inkscape {self.MINIMUM_REQUIRED_INKSCAPE_VERSION}...")
-        try:
-            # When we call this from Inkscape we need this call
-            import inkex.command as iec
-            stdout_line = iec.inkscape("", version=True)
-            executable = iec.which("inkscape")
-        except (ImportError, IOError):
-            executable = ""
-            try:
-                executable = self.find_executable('inkscape')
-                stdout, stderr = defaults.call_command([executable, "--version"])
-                stdout_line = stdout.decode("utf-8", 'ignore')
-            except (FileNotFoundError, OSError):
-                self.logger.error(f"   ...Inkscape (as {executable}) is not found!")
-                self.logger.info(f"      Ensure that Inkscape is in the system path or pass the path to")
-                self.logger.info(f"      the setup via the --inkscape-executable command line option:")
-                self.logger.info(f"      {defaults.setup_script} --inkscape-executable {defaults.example_path}inkscape")
-
-                return False
-
-        m = re.search(r"Inkscape ((\d+)\.(\d+)\.*(\d+)?[-\w]*)", stdout_line)
-        if m:
-            try:
-                found_version, major, minor, release = m.groups()
-                if not release:
-                    release = "0"
-            except ValueError as _:
-                found_version, major, minor = m.groups()
-                release = "0"
-
-            if int(major) >= req_maj and int(minor) >= req_min and int(release) >= req_rel:
-                self.logger.log(SUCCESS, f"   ...Inkscape = {found_version} is found at {executable}")
-                self.inkscape_executable = executable
-                return True
-            else:
-                self.logger.error(f"   ...Inkscape >= {self.MINIMUM_REQUIRED_INKSCAPE_VERSION} "
-                                     f"is not found (but Inkscape = {found_version} is found "
-                                     f"at {executable}).")
-                return False
-        self.logger.error("   ...can't determinate Inkscape version!")
-        return False
+        pass
 
     def find_executable(self, prog_name) -> str:
         # try value from config
-        executable_path = self.config.get(prog_name + "-executable", None)
-        if executable_path is not None:
-            if self.check_executable(executable_path):
-                self.logger.info(f"   ...using '{prog_name}-executable' = '{executable_path}' from settings.")
-                return executable_path
-            else:
-                self.logger.warning(f"   ...bad '{prog_name}' executable in settings: '{executable_path}'" )
-                self.logger.warning(f"   ...fall back to automatic detection of '{prog_name}' in system path" )
-
-        # look for executable in path
-        try:
-            return self._find_executable_in_path(prog_name)
-        except FileNotFoundError as _:
-            raise
+        pass
 
     def _find_executable_in_path(self, prog_name) -> str:
-        for exe_name in defaults.executable_names[prog_name]:
-            first_path = None
-            for path in defaults.get_system_path():
-                full_path_guess = os.path.join(path, exe_name)
-                self.logger.debug(f"   ...Looking for '{exe_name}' in '{path}'")
-                if self.check_executable(full_path_guess):
-                    self.logger.debug(f"   ...'{exe_name}' is found at '{path}'")
-                    if first_path is None:
-                        first_path = path
-
-            if first_path is not None:
-                return os.path.join(first_path, exe_name)
-
-            self.logger.debug(f"   ...'{exe_name}' is NOT found in PATH")
-
-        raise FileNotFoundError(f"'{prog_name}' is NOT found in PATH")
+        pass
 
     @staticmethod
     def check_executable(filename) -> bool:
-        return filename is not None and os.path.isfile(filename) and os.access(filename, os.X_OK)
+        pass
 
     def check(self):
 
-        def add_latex(name, exe):
-            self.available_tex_to_pdf_converters.update({name: exe})
-
-        self.logger.info(f"Python interpreter: {sys.executable}")
-        self.logger.info(f"Python version: {sys.version}")
-
-        # Check availability of Inkscape and its version
-        inkscape_found = self.find_inkscape()
-
-        # Check availability of GTK, GTKSourceView, TkInter
-        self.pygtk_is_found = self.find_gtk3()
-        self.tkinter_is_found = self.find_tkinter()
-        gui_toolkit_found = self.pygtk_is_found or self.tkinter_is_found
-        if not gui_toolkit_found:
-            self.logger.error("Neither GTK nor TkInter has been found! Without such a GUI framework TexText")
-            self.logger.error("will not work. Refer to the messages above for any details.")
-
-        # Check availability of LaTeX compilers
-        latex_compilers_found = False
-        for latex_compiler_name in [self.pdflatex_prog_name, self.lualatex_prog_name, self.xelatex_prog_name]:
-            self.logger.info(f"Checking if {latex_compiler_name} is available...")
-            try:
-                compiler_exe_path = self.find_executable(latex_compiler_name)
-            except FileNotFoundError:
-                self.logger.warning(f"   ...{latex_compiler_name} not found, but other LaTeX compilers or typst may")
-                self.logger.info(f"      be available. If you want to use {latex_compiler_name}: Ensure that the")
-                self.logger.info(f"      {latex_compiler_name} executable is in the system path or pass the path to")
-                self.logger.info(f"      the setup via the --{latex_compiler_name}-executable command line option:")
-                self.logger.info(f"      {defaults.setup_script} --{latex_compiler_name}-executable {defaults.example_path}{latex_compiler_name}")
-            else:
-                self.logger.log(SUCCESS, f"   ...{latex_compiler_name} is found at {compiler_exe_path}.")
-                latex_compilers_found = True
-                add_latex(latex_compiler_name, compiler_exe_path)
-
-        # Check availability of typst compiler
-        typst_compiler_found = False
-        self.logger.info(f"Checking if {self.typst_prog_name} is available...")
-        try:
-            compiler_exe_path = self.find_executable(self.typst_prog_name)
-        except FileNotFoundError:
-            if latex_compilers_found:
-                self.logger.warning(f"   ...{self.typst_prog_name} not found, but latex compilers are available.")
-                self.logger.info(f"      If you want to use typst: Ensure that the  typst executable is in the system")
-                self.logger.info(f"      path or pass the path to the setup via the --typst-executable command line")
-                self.logger.info(f"      option: {defaults.setup_script} --typst-executable {defaults.example_path}typst")
-            else:
-                self.logger.error(f"   ...{self.typst_prog_name} not found, and no LaTeX compilers are available.")
-                self.logger.error(f"At least one LaTeX compiler or typst must be available for TexText to work.")
-        else:
-            self.logger.log(SUCCESS, f"   ...{self.typst_prog_name} is found at {compiler_exe_path}.")
-            typst_compiler_found = True
-            add_latex(self.typst_prog_name, compiler_exe_path)
-
-        return inkscape_found and gui_toolkit_found and (latex_compilers_found or typst_compiler_found)
+        pass
 
 
 if sys.platform.startswith("win"):

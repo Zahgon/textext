@@ -80,21 +80,13 @@ class _LineIterWrapper(object):
         return current
 
     def next(self):
-        return self.__next__()
+        pass
 
     def __iter__(self):
         return self
 
     def get_context(self):
-        rv = [self.current] if self.current else []
-        for _ in range(self.ctx_lines + 1 - len(rv)):
-            try:
-                next_val = next(self.iterable)
-                self.cache.append(next_val)
-                rv.append(next_val)
-            except StopIteration:
-                break
-        return rv
+        pass
 
 
 class LatexLogParser(object):
@@ -149,17 +141,7 @@ class LatexLogParser(object):
 
         :param lines: Iterable over lines of log.
         """
-        lines_iterable = _LineIterWrapper(lines, self.context_lines)
-
-        # cache the line processor for speed
-        process_line = self.process_line
-
-        for _, line in enumerate(lines_iterable):
-            if not line:
-                continue
-            err = process_line(line)
-            if err is not None:
-                err.context_lines = lines_iterable.get_context()
+        pass
 
     def process_line(self, line):
         """
@@ -172,28 +154,7 @@ class LatexLogParser(object):
         :param line: Line to process
         :returns: LogFileMessage object or None
         """
-
-        # Missings refs are very common, try those first
-        match = self.missing_ref.match(line)
-        if match is not None:
-            return self.process_missing_ref(match)
-
-        # Badboxes are next most common, so match those first
-        match = self.badbox.match(line)
-        if match is not None:
-            return self.process_badbox(match)
-
-        # Now try warnings
-        match = self.warning.match(line)
-        if match is not None:
-            return self.process_warning(match)
-
-        # Now try errors
-        match = self.error.match(line)
-        if match is not None:
-            return self.process_error(match)
-
-        return None
+        pass
 
     def process_badbox(self, match):
         """
@@ -202,32 +163,7 @@ class LatexLogParser(object):
         :param match: regex match object to process
         :return: LogFileMessage object
         """
-
-        # Regex match groups
-        # 0 - Whole match (line)
-        # 1 - Type (Over|Under)
-        # 2 - Direction ([hv])
-        # 3 - Underfull box badness (badness (\d+))
-        # 4 - Overfull box over size (\d+(\.\d+)?pt too \w+)
-        # 5 - Multi-line start line (at lines (\d+)--)
-        # 6 - Multi-line end line (--(d+))
-        # 7 - Single line (at line (\d+))
-
-        message = LogFileMessage()
-        message['type'] = match.group(1)
-        message['direction'] = match.group(2)
-
-        # direction is either h or v
-        message['by'] = match.group(3) or match.group(4)
-
-        # single or multi-line
-        if match.group(7) is not None:
-            message['lines'] = (match.group(7), match.group(7))
-        else:
-            message['lines'] = (match.group(5), match.group(6))
-
-        self.badboxes.append(message)
-        return message
+        pass
 
     def process_warning(self, match):
         """
@@ -236,34 +172,7 @@ class LatexLogParser(object):
         :param match: regex match object to process
         :return: LogFileMessage object
         """
-
-        # Regex match groups
-        # 0 - Whole match (line)
-        # 1 - Type ((?:La|pdf)TeX|Package|Class)
-        # 2 - Package or Class name (\w*)
-        # 3 - extra
-        # 4 - Warning message (.*)
-
-        message = LogFileMessage()
-        message['type'] = type_ = match.group(1)
-
-        if type_ == 'Package':
-            # package name should be group 2
-            message['package'] = match.group(2)
-        elif type_ == 'Class':
-            # class should be group 2
-            message['class'] = match.group(2)
-        elif match.group(2) is not None:
-            # In any other case we want to record the component responsible for
-            # the warning, if one is present.
-            message['component'] = match.group(2)
-
-        if match.group(3) is not None:
-            message['extra'] = match.group(3)
-
-        message['message'] = match.group(4)
-        self.warnings.append(message)
-        return message
+        pass
 
     def process_error(self, match):
         """
@@ -272,37 +181,7 @@ class LatexLogParser(object):
         :param match: regex match object to process
         :return: LogFileMessage object
         """
-
-        # Regex match groups
-        # 0 - Whole match (line)
-        # 1 - Type (LaTeX|Package|Class)
-        # 2 - Package or Class (\w+)
-        # 3 - extra (\(([\\]\w+)\))
-        # 4 - Error message for typed error (.*)
-        # 5 - TeX error message (.*)
-
-        message = LogFileMessage()
-        if match.group(1) is not None:
-            message['type'] = type_ = match.group(1)
-
-            if type_ == 'Package':
-                # Package name should be group 2
-                message['package'] = match.group(2)
-            elif type_ == 'Class':
-                # Class name should be group 2
-                message['class'] = match.group(2)
-            elif match.group(2) is not None:
-                message['component'] = match.group(2)
-
-            if match.group(3) is not None:
-                message['extra'] = match.group(3)
-
-            message['message'] = match.group(4)
-        else:
-            message['message'] = match.group(5)
-
-        self.errors.append(message)
-        return message
+        pass
 
     def process_missing_ref(self, match):
         """
@@ -311,11 +190,4 @@ class LatexLogParser(object):
         :param match: regex match object to process
         :return: LogFileMessage object.
         """
-        message = LogFileMessage()
-        message["type"] = "Missing {grp}".format(grp=match.group(1))
-        message["key"] = match.group(2)
-        message["page"] = match.group(3)
-        message["line"] = match.group(4)
-
-        self.missing_refs.append(message)
-        return message
+        pass

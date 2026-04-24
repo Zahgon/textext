@@ -28,16 +28,7 @@ def check_cmd_in_syspath(command_name):
 
     (Currently not used, but might be useful in the future...)
     """
-    try:
-        info = _sp.STARTUPINFO()
-        info.dwFlags |= _sp.STARTF_USESHOWWINDOW
-        info.wShowWindow = _sp.SW_HIDE
-
-        proc = _sp.Popen([command_name, "--help"], stdout=_sp.PIPE, stderr=_sp.PIPE, stdin=_sp.PIPE, startupinfo=info)
-        _, _ = proc.communicate()
-        return True
-    except WindowsError as excpt:
-        return False
+    pass
 
 
 def get_non_syspath_dirs():

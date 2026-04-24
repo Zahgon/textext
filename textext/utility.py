@@ -50,8 +50,7 @@ class TemporaryDirectory(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
 
         def retry_with_chmod(func, path, exec_info):
-            os.chmod(path, stat.S_IWRITE)
-            func(path)
+            pass
 
         if self.dir_name:
             shutil.rmtree(self.dir_name, onerror=retry_with_chmod)
@@ -69,23 +68,7 @@ class MyLogger(logging.Logger):
         Needs to produce correct line numbers
     """
     def findCaller(self, *args):
-        n_frames_upper = 2
-        f = logging.currentframe()
-        for _ in range(2 + n_frames_upper):  # <-- correct frame
-            if f is not None:
-                f = f.f_back
-        rv = "(unknown file)", 0, "(unknown function)", None
-        while hasattr(f, "f_code"):
-            co = f.f_code
-            filename = os.path.normcase(co.co_filename)
-            if filename == logging._srcfile:
-                f = f.f_back
-                continue
-            rv = (co.co_filename, f.f_lineno, co.co_name, None)
-            break
-        if sys.version_info[0] == 2:  # ToDo: Remove when Python 2 support is deprecated
-            rv = rv[0:3]
-        return rv
+        pass
 
 
 class NestedLoggingGuard(object):
@@ -114,28 +97,26 @@ class NestedLoggingGuard(object):
         NestedLoggingGuard.message_offset -= NestedLoggingGuard.message_indent
 
         def tmp1():  # this nesting needed to even number of stack frames in __enter__ and __exit__
-            def tmp2():
-                self._logger.log(self._level, " " * NestedLoggingGuard.message_offset + self._message.strip() + " " + result)
-            tmp2()
+            pass
         tmp1()
 
     def debug(self, message):
-        return self.log(logging.DEBUG, message)
+        pass
 
     def info(self, message):
-        return self.log(logging.INFO, message)
+        pass
 
     def error(self, message):
-        return self.log(logging.ERROR, message)
+        pass
 
     def warning(self, message):
-        return self.log(logging.WARNING, message)
+        pass
 
     def critical(self, message):
-        return self.log(logging.CRITICAL, message)
+        pass
 
     def log(self, lvl, message):
-        return NestedLoggingGuard(self._logger, lvl, message)
+        pass
 
 
 class CycleBufferHandler(logging.handlers.BufferingHandler):
@@ -144,20 +125,10 @@ class CycleBufferHandler(logging.handlers.BufferingHandler):
         super(CycleBufferHandler, self).__init__(capacity)
 
     def emit(self, record):
-        self.buffer.append(record)
-        if len(self.buffer) > self.capacity:
-            self.buffer = self.buffer[-self.capacity:]
+        pass
 
     def show_messages(self):
-        import sys
-        version_is_good = (2, 7) <= sys.version_info < (3, 0)
-        if version_is_good:
-            import inkex
-            """show messages to user and empty buffer"""
-            inkex.errormsg("\n".join([self.format(record) for record in self.buffer]))
-        else:
-            sys.stderr.write("\n".join([self.format(record) for record in self.buffer]))
-        self.flush()
+        pass
 
 
 class Settings(object):
@@ -176,27 +147,16 @@ class Settings(object):
             raise TexTextFatalError("Bad config `%s`: %s. Please fix it and re-run TexText." % (self.config_path, str(e)) )
 
     def load(self):
-        if os.path.isfile(self.config_path):
-            with open(self.config_path) as f:
-                self.values = json.load(f)
+        pass
 
     def save(self):
-        with open(self.config_path, "w") as f:
-            json.dump(self.values, f, indent=2)
+        pass
 
     def get(self, key, default=None):
-        result = self.values.get(key, default)
-        if result is None:
-            return default
-        return result
+        pass
 
     def delete_file(self):
-        if os.path.exists(self.config_path):
-            try:
-                os.remove(self.config_path)
-            except OSError as err:
-                TexTextFatalError("Config `%s` could not be deleted. Error message: %s" % (
-                                  self.config_path, str(err)))
+        pass
 
     def __getitem__(self, key):
         return self.values.get(key)
